@@ -23,7 +23,29 @@ impl ToPrettyTree for () {
         PrettyTree::Value(String::from("()"))
     }
 }
-
+impl ToPrettyTree for bool {
+    fn to_pretty_tree(&self) -> PrettyTree {
+        match self {
+            true => PrettyTree::Value(String::from("true")),
+            false => PrettyTree::Value(String::from("false")),
+        }
+    }
+}
+impl ToPrettyTree for usize {
+    fn to_pretty_tree(&self) -> PrettyTree {
+        PrettyTree::Value(format!("{}", self))
+    }
+}
+impl ToPrettyTree for u8 {
+    fn to_pretty_tree(&self) -> PrettyTree {
+        PrettyTree::Value(format!("{}", self))
+    }
+}
+impl ToPrettyTree for u32 {
+    fn to_pretty_tree(&self) -> PrettyTree {
+        PrettyTree::Value(format!("{}", self))
+    }
+}
 impl<Type> PrettyTreePrinter for Type where Type: ToPrettyTree {
     fn print_pretty_tree(&self) {
         let tree = self.to_pretty_tree().format(&Default::default());
