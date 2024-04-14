@@ -21,7 +21,7 @@ impl PrettyTree {
         let value = value.to_string();
         Self::Value(format!("{value}"))
     }
-    pub fn string<T: ToString>(value: T) -> Self {
+    pub fn string(value: impl ToString) -> Self {
         let value = value.to_string();
         Self::Value(format!("{value:?}"))
     }
@@ -51,7 +51,7 @@ impl PrettyTree {
         let key = key.as_ref().to_string();
         match value.to_pretty_tree() {
             PrettyTree::String(text) => PrettyTree::Value(format!("{key}: {:?}", text)),
-            // PrettyTree::Value(text) => PrettyTree::Value(format!("{key}: {}", text)),
+            PrettyTree::Value(text) => PrettyTree::Value(format!("{key}: {}", text)),
             tree => {
                 Self::Branch(PrettyBranch {
                     label: key,

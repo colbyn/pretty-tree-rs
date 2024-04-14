@@ -26,8 +26,8 @@ pub fn string(value: impl AsRef<str>) -> PrettyTree {
     PrettyTree::String(value.as_ref().to_string())
 }
 
-pub fn value(value: impl ToString) -> PrettyTree {
-    PrettyTree::Value(value.to_string())
+pub fn value(value: impl AsRef<str>) -> PrettyTree {
+    PrettyTree::Value(value.as_ref().to_string())
 }
 
 pub fn branch_builder(label: impl AsRef<str>) -> PrettyBranch {
