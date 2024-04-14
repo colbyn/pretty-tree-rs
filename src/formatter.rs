@@ -157,7 +157,7 @@ impl PrettyTree {
         match self {
             Self::Empty => String::default(),
             Self::Value(x) => formatter.leaf(x),
-            Self::String(x) => formatter.leaf("{x:?}"),
+            Self::String(x) => formatter.leaf(format!("{x:?}")),
             Self::Branch(x) => x.format(formatter),
             Self::Fragment(x) => x.format(formatter),
         }
