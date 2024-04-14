@@ -50,8 +50,8 @@ impl PrettyTree {
     ) -> Self {
         let key = key.as_ref().to_string();
         match value.to_pretty_tree() {
-            PrettyTree::Value(text) => PrettyTree::Value(format!("{key}: {text}")),
-            PrettyTree::String(text) => PrettyTree::Value(format!("{key}: {text:?}")),
+            PrettyTree::String(text) => PrettyTree::Value(format!("{key}: {:?}", text)),
+            // PrettyTree::Value(text) => PrettyTree::Value(format!("{key}: {}", text)),
             tree => {
                 Self::Branch(PrettyBranch {
                     label: key,

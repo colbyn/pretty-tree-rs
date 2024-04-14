@@ -162,6 +162,9 @@ impl PrettyTree {
             Self::Fragment(x) => x.format(formatter),
         }
     }
+    pub fn render(&self) -> String {
+        self.format(&Default::default())
+    }
 }
 impl PrettyBranch {
     pub fn format(&self, formatter: &Formatter) -> String {
