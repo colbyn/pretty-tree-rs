@@ -264,7 +264,7 @@ impl PrettyTree {
             Self::String(x) => formatter.leaf(format!("{x:?}")),
             Self::Branch(x) => x.format(formatter),
             Self::Fragment(x) => x.format(formatter),
-            Self::List(x) => unimplemented!("TODO"),
+            Self::List(x) => x.format(formatter),
         }
     }
     pub fn render(&self) -> String {
