@@ -189,6 +189,7 @@ impl Formatter {
     }
     fn list(&self, label: Option<&str>, list: &[PrettyTree]) -> String {
         let compact_mode = self.style.compact_mode;
+        let label = label.map(|x| self.leaf(x));
         match label {
             Some(label) if list.is_empty() => return label.to_owned(),
             Some(label) if list.len() == 1 => {
