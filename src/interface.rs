@@ -90,11 +90,11 @@ impl<T: ToPrettyTree> ToPrettyTree for Vec<T> {
         if children.is_empty() {
             return PrettyTree::key_value(name, PrettyTree::Value(String::from("[]")))
         }
-        // PrettyTree::branch_of(name, &children)
-        PrettyTree::List(crate::PrettyList {
-            name: Some(name),
-            nodes: children,
-        })
+        PrettyTree::branch_of(name, &children)
+        // PrettyTree::List(crate::PrettyList {
+        //     name: Some(name),
+        //     nodes: children,
+        // })
     }
 }
 impl<T: ToPrettyTree> ToPrettyTree for &[T] {

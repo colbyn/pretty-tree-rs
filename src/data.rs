@@ -13,8 +13,8 @@ pub enum PrettyTree {
     Branch(PrettyBranch),
     /// A fragment node.
     Fragment(PrettyFragment),
-    /// A list node.
-    List(PrettyList),
+    // /// A list node.
+    // List(PrettyList),
 }
 
 impl PrettyTree {
@@ -163,8 +163,8 @@ impl PrettyFragment {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct PrettyList {
-    pub name: Option<String>,
-    pub nodes: Vec<PrettyTree>,
-}
+// #[derive(Debug, Clone)]
+// pub struct PrettyList {
+//     pub data_type: Option<String>,
+//     pub nodes: Vec<PrettyTree>,
+// }

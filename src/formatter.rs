@@ -1,4 +1,4 @@
-use crate::{PrettyBranch, PrettyFragment, PrettyList, PrettyTree};
+use crate::{PrettyBranch, PrettyFragment, PrettyTree};
 use colored::Colorize;
 
 #[derive(Debug, Clone)]
@@ -265,7 +265,7 @@ impl PrettyTree {
             Self::String(x) => formatter.leaf(format!("{x:?}")),
             Self::Branch(x) => x.format(formatter),
             Self::Fragment(x) => x.format(formatter),
-            Self::List(x) => x.format(formatter),
+            // Self::List(x) => x.format(formatter),
         }
     }
     pub fn render(&self) -> String {
@@ -282,15 +282,15 @@ impl PrettyFragment {
         formatter.fragment(&self.nodes)
     }
 }
-impl PrettyList {
-    pub fn format(&self, formatter: &Formatter) -> String {
-        // if let Some(name) = self.name.as_ref() {
-        //     return formatter.branch(name, &self.nodes)
-        // }
-        // return formatter.fragment(&self.nodes)
-        formatter.list(self.name.as_ref().map(|x| x.as_str()), &self.nodes)
-    }
-}
+// impl PrettyList {
+//     pub fn format(&self, formatter: &Formatter) -> String {
+//         // if let Some(name) = self.name.as_ref() {
+//         //     return formatter.branch(name, &self.nodes)
+//         // }
+//         // return formatter.fragment(&self.nodes)
+//         formatter.list(self.data_type.as_ref().map(|x| x.as_str()), &self.nodes)
+//     }
+// }
 impl std::fmt::Display for PrettyTree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.format(&Default::default()))
