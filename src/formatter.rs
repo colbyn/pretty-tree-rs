@@ -1,21 +1,48 @@
-use crate::{PrettyBranch, PrettyFragment, PrettyTree};
+use crate::{PrettyBranch, PrettyFragment, PrettyList, PrettyTree};
 use colored::Colorize;
 
 #[derive(Debug, Clone)]
 pub struct Formatter {
     columns: Vec<TreeColumn>,
-    use_color: bool,
+    style: FormatterStyle,
 }
 
 impl Formatter {
     pub const COLUMN_LENGTH: usize = 4;
+    pub fn new(style: FormatterStyle) -> Self {
+        Self { columns: Default::default(), style }
+    }
+    pub fn map_formatter_style(self, f: impl FnOnce(FormatterStyle) -> FormatterStyle) -> Self {
+        Self { columns: self.columns, style: f(self.style) }
+    }
 }
 impl Default for Formatter {
     fn default() -> Self {
         Self {
             columns: Default::default(),
-            use_color: true,
+            style: FormatterStyle::default(),
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct FormatterStyle {
+    use_color: bool,
+    compact_mode: bool,
+}
+
+impl FormatterStyle {
+    pub fn use_color(self, color: bool) -> Self {
+        Self { use_color: color, compact_mode: self.compact_mode }
+    }
+    pub fn compact_mode(self, compact_mode: bool) -> Self {
+        Self { use_color: self.use_color, compact_mode }
+    }
+}
+
+impl Default for FormatterStyle {
+    fn default() -> Self {
+        Self { use_color: false, compact_mode: false }
     }
 }
 
@@ -52,7 +79,7 @@ impl Formatter {
             })
             .collect::<Vec<_>>();
         columns.push(TreeColumn::DownThenRight);
-        Self { columns, use_color: self.use_color }
+        Self { columns, style: self.style }
     }
     fn down_and_right(&self) -> Self {
         let mut columns = self.columns
@@ -65,12 +92,25 @@ impl Formatter {
             })
             .collect::<Vec<_>>();
         columns.push(TreeColumn::DownAndRight);
-        Self { columns, use_color: self.use_color }
+        Self { columns, style: self.style }
+    }
+    fn up_then_right(&self) -> Self {
+        let mut columns = self.columns
+            .clone()
+            .into_iter()
+            .map(|x| match x {
+                TreeColumn::DownAndRight => TreeColumn::VerticalBar,
+                TreeColumn::DownThenRight => TreeColumn::Empty,
+                x => x
+            })
+            .collect::<Vec<_>>();
+        columns.push(TreeColumn::UpThenRight);
+        Self { columns, style: self.style }
     }
     fn with_column(&self, column: TreeColumn) -> Self {
         let mut columns = self.columns.clone();
         columns.push(column);
-        Self { columns, use_color: self.use_color }
+        Self { columns, style: self.style }
     }
     fn replace_last_column(mut self, column: TreeColumn) -> Self {
         if let Some(last) = self.columns.last_mut() {
@@ -147,8 +187,72 @@ impl Formatter {
             .join("\n");
         format!("{label}\n{children}")
     }
+    fn list(&self, label: Option<&str>, list: &[PrettyTree]) -> String {
+        let compact_mode = self.style.compact_mode;
+        match label {
+            Some(label) if list.is_empty() => return label.to_owned(),
+            Some(label) if list.len() == 1 => {
+                let child = list
+                    .first()
+                    .unwrap()
+                    .format(&self.down_then_right());
+                return format!("{label}\n{child}")
+            }
+            None if list.len() == 1 => return list.first().unwrap().format(self),
+            None if list.is_empty() => return "[]".to_owned(),
+            _ => ()
+        }
+        match label {
+            Some(label) => {
+                let child_count = list.len();
+                let last_child_index = child_count - 1;
+                let children = list
+                    .iter()
+                    .enumerate()
+                    .map(|(ix, child)| {
+                        let is_first = ix == 0;
+                        let is_last = ix == last_child_index;
+                        if is_first {
+                            return child.format(&self.down_and_right())
+                        }
+                        if is_last {
+                            return child.format(&self.down_then_right())
+                        }
+                        return child.format(&self.down_and_right())
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                if compact_mode {
+                    format!("{children}")
+                } else {
+                    format!("{label}\n{children}")
+                }
+            }
+            None => {
+                let child_count = list.len();
+                let last_child_index = child_count - 1;
+                let children = list
+                    .iter()
+                    .enumerate()
+                    .map(|(ix, child)| {
+                        let is_first = ix == 0;
+                        let is_last = ix == last_child_index;
+                        if is_first {
+                            return child.format(&self.up_then_right())
+                        }
+                        if is_last {
+                            return child.format(&self.down_then_right())
+                        }
+                        return child.format(&self.down_and_right())
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                return children
+            }
+        }
+    }
     fn fragment(&self, list: &[PrettyTree]) -> String {
-        self.branch("[]", list)
+        self.list(None, list)
     }
 }
 
@@ -160,6 +264,7 @@ impl PrettyTree {
             Self::String(x) => formatter.leaf(format!("{x:?}")),
             Self::Branch(x) => x.format(formatter),
             Self::Fragment(x) => x.format(formatter),
+            Self::List(x) => unimplemented!("TODO"),
         }
     }
     pub fn render(&self) -> String {
@@ -174,6 +279,15 @@ impl PrettyBranch {
 impl PrettyFragment {
     pub fn format(&self, formatter: &Formatter) -> String {
         formatter.fragment(&self.nodes)
+    }
+}
+impl PrettyList {
+    pub fn format(&self, formatter: &Formatter) -> String {
+        // if let Some(name) = self.name.as_ref() {
+        //     return formatter.branch(name, &self.nodes)
+        // }
+        // return formatter.fragment(&self.nodes)
+        formatter.list(self.name.as_ref().map(|x| x.as_str()), &self.nodes)
     }
 }
 impl std::fmt::Display for PrettyTree {

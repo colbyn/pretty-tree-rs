@@ -13,6 +13,8 @@ pub enum PrettyTree {
     Branch(PrettyBranch),
     /// A fragment node.
     Fragment(PrettyFragment),
+    /// A list node.
+    List(PrettyList),
 }
 
 impl PrettyTree {
@@ -159,4 +161,10 @@ impl PrettyFragment {
     pub fn from_iter<Value: ToPrettyTree>(list: impl IntoIterator<Item = Value>) -> Self {
         Self { nodes: list.into_iter().map(|x| x.to_pretty_tree()).collect() }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct PrettyList {
+    pub name: Option<String>,
+    pub nodes: Vec<PrettyTree>,
 }
