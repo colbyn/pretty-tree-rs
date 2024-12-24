@@ -67,6 +67,21 @@ impl std::fmt::Display for TreeColumn {
     }
 }
 
+impl FormatterStyle {
+    fn color(&self, depth: usize, string: impl ToString) -> impl ToString {
+        let string = string.to_string();
+        if !self.use_color {
+            return string.into()
+        }
+        match depth % 4 {
+            0 => string.truecolor(255, 20, 165), // PINK
+            1 => string.truecolor(252, 255, 87), // YELLOW
+            2 => string.truecolor(0, 255, 0), // GREEN
+            _ => string.truecolor(102, 255, 252), // BLUE
+        }
+    }
+}
+
 impl Formatter {
     fn down_then_right(&self) -> Self {
         let mut columns = self.columns
@@ -122,29 +137,20 @@ impl Formatter {
         self.columns.pop();
         self
     }
-    fn color(depth: usize, string: impl ToString) -> impl ToString {
-        let string = string.to_string();
-        match depth % 4 {
-            0 => string.truecolor(255, 20, 165), // PINK
-            1 => string.truecolor(252, 255, 87), // YELLOW
-            2 => string.truecolor(0, 255, 0), // GREEN
-            _ => string.truecolor(102, 255, 252), // BLUE
-        }
-    }
     fn leading(&self) -> impl ToString {
         let depth = self.columns.len();
         let thin_space = "\u{2009}";
         let leading = self.columns
             .iter()
             .enumerate()
-            .map(|(ix, c)| Self::color(ix, c).to_string())
+            .map(|(ix, c)| self.style.color(ix, c).to_string())
             .collect::<Vec<_>>()
             .join("  ");
         let sep = if self.columns.is_empty() {
             String::default()
         } else {
             let depth = if depth > 1 { depth - 1 } else { 0 };
-            Self::color(depth, format!("╼{thin_space}")).to_string()
+            self.style.color(depth, format!("╼{thin_space}")).to_string()
         };
         format!("{leading}{sep}").dimmed()
     }
@@ -152,7 +158,7 @@ impl Formatter {
         let value = value.to_string();
         let depth = self.columns.len();
         let leading = self.leading().to_string();
-        let trailing = Self::color(depth, value).to_string();
+        let trailing = self.style.color(depth, value).to_string();
         format!("{leading}{trailing}")
     }
     fn branch(&self, label: impl ToString, children: &[PrettyTree]) -> String {
