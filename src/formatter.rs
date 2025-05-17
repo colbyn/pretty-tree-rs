@@ -258,8 +258,27 @@ impl Formatter {
             }
         }
     }
+    // fn fragment(&self, list: &[PrettyTree]) -> String {
+    //     self.list(None, list)
+    // }
     fn fragment(&self, list: &[PrettyTree]) -> String {
-        self.list(None, list)
+        if list.len() == 1 {
+            return list.first().unwrap().format(self);
+        }
+        let child_count = list.len();
+        let last_child_index = child_count - 1;
+        list.iter()
+            .enumerate()
+            .map(|(ix, child)| {
+                let is_last = ix == last_child_index;
+                if is_last {
+                    child.format(&self.down_then_right())
+                } else {
+                    child.format(&self.down_and_right())
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
