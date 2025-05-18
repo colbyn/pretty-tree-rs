@@ -266,7 +266,7 @@ impl Formatter {
             return list.first().unwrap().format(self);
         }
         let child_count = list.len();
-        let last_child_index = child_count - 1;
+        let last_child_index = if child_count == 0 { 0 } else { child_count - 1 };
         list.iter()
             .enumerate()
             .map(|(ix, child)| {
